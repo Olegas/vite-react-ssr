@@ -8,6 +8,7 @@ dotenv.config()
 import express from 'express'
 import * as fs from 'fs'
 import * as path from 'path'
+import type { configureStore } from '@reduxjs/toolkit'
 
 const isDev = () => process.env.NODE_ENV === 'development'
 
@@ -61,14 +62,22 @@ async function startServer() {
 
       }
 
-      let render: () => Promise<string>;
-
-      if (!isDev()) {
-        render = (await import(ssrClientPath)).render;
-      } else {
-        render = (await vite!.ssrLoadModule(path.resolve(srcPath, 'ssr.tsx'))).render;
+      interface SSRModule {
+        render: () => Promise<string>
+        createStore: () => ReturnType<typeof configureStore>
       }
 
+      let mod: SSRModule
+
+      if (!isDev()) {
+        mod = (await import(ssrClientPath));
+      } else {
+        mod = (await vite!.ssrLoadModule(path.resolve(srcPath, 'ssr.tsx'))) as SSRModule;
+      }
+
+      const { render, createStore } = mod;
+      const store = createStore()
+      store.dispatch()
       const appHtml = await render()
 
       const html = template.replace(`<!--ssr-outlet-->`, appHtml)

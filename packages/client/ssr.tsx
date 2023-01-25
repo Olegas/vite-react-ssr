@@ -1,8 +1,17 @@
 import App from './src/App'
 import { renderToString } from 'react-dom/server'
+import { createStore } from './src/store'
+import { Provider } from 'react-redux'
 
-export function render() {
+function render(store) {
   return renderToString(
-    <App />
+    <Provider store={store}>
+      <App />
+    </Provider>
   )
+}
+
+export {
+  createStore,
+  render
 }

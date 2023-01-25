@@ -1,18 +1,18 @@
-import { useEffect } from 'react'
 import './App.css'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { Login } from './pages/Login'
+import { Me } from './pages/Me'
+
+const router = createBrowserRouter([{
+  path: "/",
+  element: <Login />
+}, {
+  path: "/me",
+  element: <Me />
+}])
 
 function App() {
-  useEffect(() => {
-    const fetchServerData = async () => {
-      const url = `http://localhost:${__SERVER_PORT__}/api`
-      const response = await fetch(url)
-      const data = await response.json()
-      console.log(data)
-    }
-
-    fetchServerData()
-  }, [])
-  return <div className="App">Hello world :)</div>
+  return <RouterProvider router={router} />
 }
 
 export default App
