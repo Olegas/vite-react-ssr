@@ -1,17 +1,15 @@
 import App from './src/App'
 import { renderToString } from 'react-dom/server'
-import { createStore } from './src/store'
-import { Provider } from 'react-redux'
+import { StaticRouter } from 'react-router-dom/server'
 
-function render(store) {
+function render(uri) {
   return renderToString(
-    <Provider store={store}>
+    <StaticRouter location={uri}>
       <App />
-    </Provider>
+    </StaticRouter>
   )
 }
 
 export {
-  createStore,
   render
 }

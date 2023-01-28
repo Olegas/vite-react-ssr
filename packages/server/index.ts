@@ -59,12 +59,10 @@ async function startServer() {
         )
 
         template = await vite!.transformIndexHtml(url, template)
-
       }
 
       interface SSRModule {
-        render: () => Promise<string>
-        createStore: () => ReturnType<typeof configureStore>
+        render: (uri: string) => Promise<string>
       }
 
       let mod: SSRModule
@@ -75,10 +73,8 @@ async function startServer() {
         mod = (await vite!.ssrLoadModule(path.resolve(srcPath, 'ssr.tsx'))) as SSRModule;
       }
 
-      const { render, createStore } = mod;
-      const store = createStore()
-      store.dispatch()
-      const appHtml = await render()
+      const { render } = mod;
+      const appHtml = await render(url)
 
       const html = template.replace(`<!--ssr-outlet-->`, appHtml)
 
