@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { doLoginWithCode, getAppId, getMe, getRedirectUri } from '../../api/yandex'
+import { doLoginWithCode, getAppId, getRedirectUri } from '../../api/yandex'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 export function Login() {

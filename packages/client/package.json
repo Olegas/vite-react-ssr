@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build --config vite.config.ts",
-    "build:ssr": "tsc && vite build --config ssr.config.ts",
+    "build": "tsc && vite build --config vite.config.ts --watch",
+    "build:ssr": "tsc && vite build --config ssr.config.ts --watch",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -16,6 +16,7 @@
     "axios": "^1.2.4",
     "dotenv": "^16.0.2",
     "eslint-config-prettier": "^8.5.0",
+    "http-proxy-middleware": "^2.0.6",
     "prettier": "^2.7.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

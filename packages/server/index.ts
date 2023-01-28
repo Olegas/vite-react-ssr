@@ -8,14 +8,14 @@ dotenv.config()
 import express from 'express'
 import * as fs from 'fs'
 import * as path from 'path'
-import type { configureStore } from '@reduxjs/toolkit'
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const isDev = () => process.env.NODE_ENV === 'development'
 
 async function startServer() {
   const app = express()
   app.use(cors())
-  const port = Number(process.env.SERVER_PORT) || 3001
+  const port = Number(process.env.SERVER_PORT) || 3000
 
   let vite: ViteDevServer | undefined;
   const distPath = path.dirname(require.resolve('client/dist/index.html'))
@@ -31,6 +31,14 @@ async function startServer() {
 
     app.use(vite.middlewares)
   }
+
+  app.use('/api/v2', createProxyMiddleware({
+    changeOrigin: true,
+    cookieDomainRewrite: {
+      '*': ''
+    },
+    target: 'https://ya-praktikum.tech'
+  }))
 
   app.get('/api', (_, res) => {
     res.json('👋 Howdy from the server :)')
