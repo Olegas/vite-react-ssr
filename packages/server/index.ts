@@ -9,6 +9,9 @@ import express from 'express'
 import * as fs from 'fs'
 import * as path from 'path'
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import cookieParser from 'cookie-parser';
+import jsesc from 'jsesc';
+import { loadState } from './state/load'
 
 const isDev = () => process.env.NODE_ENV === 'development'
 
@@ -49,7 +52,7 @@ async function startServer() {
     app.use('/assets', express.static(path.resolve(distPath, 'assets')))
   }
 
-  app.use('*', async (req, res, next) => {
+  app.use('*', cookieParser(), async (req, res, next) => {
     const url = req.originalUrl;
 
     try {
@@ -70,7 +73,7 @@ async function startServer() {
       }
 
       interface SSRModule {
-        render: (uri: string) => Promise<string>
+        render: (uri: string, initialState: Record<string, any>) => Promise<string>
       }
 
       let mod: SSRModule
@@ -82,9 +85,13 @@ async function startServer() {
       }
 
       const { render } = mod;
-      const appHtml = await render(url)
-
-      const html = template.replace(`<!--ssr-outlet-->`, appHtml)
+      const initialState = await loadState(req)
+      const appHtml = await render(url, initialState)
+      const initStateSerialized = jsesc(JSON.stringify(initialState), {
+        json: true,
+        isScriptContext: true
+      });
+      const html = template.replace(`<!--ssr-outlet-->`, appHtml).replace('<!--store-data-->', initStateSerialized)
 
       res.status(200).set({ 'Content-Type': 'text/html' }).end(html)
     } catch (e) {

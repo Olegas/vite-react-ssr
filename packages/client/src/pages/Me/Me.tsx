@@ -1,18 +1,12 @@
-import { useEffect, useState } from 'react'
-import { getMe } from '../../api/yandex'
+import { useSelector } from 'react-redux'
+import { selectUserSlice } from '../../store'
 
 export function Me() {
-  const [me, setMe] = useState(null);
-
-  useEffect(() => {
-    if (!me) {
-      getMe().then(setMe)
-    }
-  });
+  const { profile } = useSelector(selectUserSlice);
 
   return <>
     <pre>
-      {JSON.stringify(me, null, 2)}
+      {JSON.stringify(profile, null, 2)}
     </pre>
   </>
 }

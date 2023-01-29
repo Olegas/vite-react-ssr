@@ -1,41 +1,69 @@
-import { configureStore, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { fetchServerData } from '../api'
+import { configureStore, createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit'
+import { getMe } from '../api/yandex'
 
-const loadGreeting = createAsyncThunk('root/loadGreeting', async () => {
-  const { data } = await fetchServerData();
-  return {
-    greeting: data
+const loadMe = createAsyncThunk<User>('root/loadGreeting', async () => {
+  try {
+    return await getMe();
+  } catch (e) {
+    return null;
   }
 })
 
-interface StoreState {
-  root: {
-    greeting: string
-  }
+interface User {
+  id: number,
+  first_name: string,
+  second_name: string,
+  display_name: string,
+  login: string,
+  avatar: string | null,
+  email: string,
+  phone: string | null
 }
+
+interface UserSlice {
+  profile: User | null
+  isLoaded: boolean
+}
+
+export interface StoreState {
+  user: UserSlice
+}
+
+const selectUserSlice = (store: StoreState) => store.user;
+const selectIsAuthCompleted = createSelector(selectUserSlice, (user) => user.isLoaded)
+const selectIsAuthenticated = createSelector(selectUserSlice, selectIsAuthCompleted, (user, authCompleted) => [authCompleted, authCompleted && user.profile !== null]);
 
 function createStore(initialState?: StoreState) {
   const rootSlice = createSlice({
-    name: 'root',
+    name: 'user',
     initialState: {
-      greeting: ''
-    },
+      profile: null,
+      isLoaded: false
+    } as UserSlice,
     reducers: {},
     extraReducers: (builder) => {
-      builder.addCase(loadGreeting.fulfilled, (store, action) => {
-        const { payload: { greeting }} = action;
-        store.greeting = greeting
+      builder.addCase(loadMe.pending, (store) => {
+        store.isLoaded = false
+      })
+      builder.addCase(loadMe.rejected, (store) => {
+        store.isLoaded = true;
+        store.profile = null;
+      })
+      builder.addCase(loadMe.fulfilled, (store, action) => {
+        const { payload } = action;
+        store.profile = payload
+        store.isLoaded = true
       })
     }
   })
 
   return configureStore({
     reducer: {
-      root: rootSlice.reducer
+      user: rootSlice.reducer
     },
     preloadedState: initialState
   })
 
 }
 
-export { createStore, loadGreeting }
+export { createStore, loadMe, selectUserSlice, selectIsAuthenticated, selectIsAuthCompleted }
