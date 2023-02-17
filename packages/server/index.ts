@@ -93,10 +93,20 @@ async function startServer() {
         url,
         new YandexAPIRepository(req.headers['cookie'])
       )
-      const initStateSerialized = jsesc(JSON.stringify(initialState), {
+      // Encoding for fast state parsing
+      /*const initStateSerialized = jsesc(JSON.stringify(initialState), {
         json: true,
         isScriptContext: true,
-      })
+      })*/
+
+      // Encoding from Redux docs
+      /*const initStateSerialized = JSON.stringify(initialState).replace(
+        /</g,
+        '\\u003c'
+      )*/
+
+      const initStateSerialized = JSON.stringify(initialState)
+
       const html = template
         .replace(`<!--ssr-outlet-->`, appHtml)
         .replace('<!--store-data-->', initStateSerialized)
