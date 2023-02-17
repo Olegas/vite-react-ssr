@@ -3,12 +3,13 @@ import { loadMe, selectUserSlice, useAppDispatch } from '../../store'
 import { useEffect } from 'react'
 
 export function Me() {
+  const { profile } = useSelector(selectUserSlice)
   const dispatch = useAppDispatch()
   useEffect(() => {
-    dispatch(loadMe())
-  }, [])
-
-  const { profile } = useSelector(selectUserSlice)
+    if (!profile) {
+      dispatch(loadMe())
+    }
+  }, [profile])
 
   return (
     <>

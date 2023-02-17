@@ -11,7 +11,7 @@ import * as path from 'path'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import cookieParser from 'cookie-parser'
 import jsesc from 'jsesc'
-import { loadState } from './state/load'
+import { YandexAPIRepository } from './repository/YandexAPIRepository'
 
 const isDev = () => process.env.NODE_ENV === 'development'
 
@@ -23,7 +23,7 @@ async function startServer() {
   let vite: ViteDevServer | undefined
   const distPath = path.dirname(require.resolve('client/dist/index.html'))
   const srcPath = path.dirname(require.resolve('client'))
-  const ssrClientPath = require.resolve('client/ssr-dist/client.cjs')
+  const ssrClientPath = require.resolve('client/ssr-dist/ssr.cjs')
 
   if (isDev()) {
     vite = await createViteServer({
@@ -72,21 +72,27 @@ async function startServer() {
       }
 
       interface SSRModule {
-        render: (uri: string) => Promise<[Record<string, any>, string]>
+        render: (
+          uri: string,
+          repository: any
+        ) => Promise<[Record<string, any>, string]>
       }
 
       let mod: SSRModule
 
-      if (!isDev()) {
-        mod = await import(ssrClientPath)
-      } else {
+      if (isDev()) {
         mod = (await vite!.ssrLoadModule(
           path.resolve(srcPath, 'ssr.tsx')
         )) as SSRModule
+      } else {
+        mod = await import(ssrClientPath)
       }
 
       const { render } = mod
-      const [initialState, appHtml] = await render(url)
+      const [initialState, appHtml] = await render(
+        url,
+        new YandexAPIRepository(req.headers['cookie'])
+      )
       const initStateSerialized = jsesc(JSON.stringify(initialState), {
         json: true,
         isScriptContext: true,

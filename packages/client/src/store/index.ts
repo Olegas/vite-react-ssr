@@ -4,16 +4,21 @@ import {
   createSelector,
   createSlice,
 } from '@reduxjs/toolkit'
-import { doLoginWithCode, getMe, logoutUser } from '../api/yandex'
+import { doLoginWithCode, logoutUser } from '../api/yandex'
 import { useDispatch } from 'react-redux'
+import { User } from '../entities/user'
 
-const loadMe = createAsyncThunk<User>('root/loadGreeting', async () => {
-  try {
-    return await getMe()
-  } catch (e) {
-    return null
+interface IUserService {
+  getCurrentUser(): Promise<User>
+}
+
+const loadMe = createAsyncThunk<User>(
+  'root/loadGreeting',
+  async (_, thunkApi) => {
+    const service: IUserService = thunkApi.extra as IUserService
+    return service.getCurrentUser()
   }
-})
+)
 
 const logout = createAsyncThunk('root/logout', async () => {
   try {
@@ -30,17 +35,6 @@ const authByCode = createAsyncThunk<void, string>(
     dispatch(loadMe())
   }
 )
-
-interface User {
-  id: number
-  first_name: string
-  second_name: string
-  display_name: string
-  login: string
-  avatar: string | null
-  email: string
-  phone: string | null
-}
 
 interface UserSlice {
   profile: User | null
@@ -65,7 +59,7 @@ const selectIsAuthenticated = createSelector(
   ]
 )
 
-function createStore(initialState?: StoreState) {
+function createStore(service: IUserService, initialState?: StoreState) {
   const rootSlice = createSlice({
     name: 'user',
     initialState: {
@@ -98,6 +92,13 @@ function createStore(initialState?: StoreState) {
       user: rootSlice.reducer,
     },
     preloadedState: initialState,
+    middleware: getDefaultMiddleware => {
+      return getDefaultMiddleware({
+        thunk: {
+          extraArgument: service,
+        },
+      })
+    },
   })
 }
 
