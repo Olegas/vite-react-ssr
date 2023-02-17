@@ -72,10 +72,7 @@ async function startServer() {
       }
 
       interface SSRModule {
-        render: (
-          uri: string,
-          initialState: Record<string, any>
-        ) => Promise<string>
+        render: (uri: string) => Promise<[Record<string, any>, string]>
       }
 
       let mod: SSRModule
@@ -89,8 +86,7 @@ async function startServer() {
       }
 
       const { render } = mod
-      const initialState = await loadState(req)
-      const appHtml = await render(url, initialState)
+      const [initialState, appHtml] = await render(url)
       const initStateSerialized = jsesc(JSON.stringify(initialState), {
         json: true,
         isScriptContext: true,
