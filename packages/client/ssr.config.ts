@@ -7,6 +7,7 @@ import * as path from 'path'
 export default defineConfig({
   plugins: [react()],
   build: {
+    outDir: 'ssr-dist',
     lib: {
       entry: path.resolve(__dirname, "ssr.tsx"),
       name: 'Client',

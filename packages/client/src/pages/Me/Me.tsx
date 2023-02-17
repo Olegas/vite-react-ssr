@@ -1,12 +1,18 @@
 import { useSelector } from 'react-redux'
-import { selectUserSlice } from '../../store'
+import { loadMe, selectUserSlice, useAppDispatch } from '../../store'
+import { useEffect } from 'react'
 
 export function Me() {
-  const { profile } = useSelector(selectUserSlice);
+  const dispatch = useAppDispatch()
+  useEffect(() => {
+    dispatch(loadMe())
+  }, [])
 
-  return <>
-    <pre>
-      {JSON.stringify(profile, null, 2)}
-    </pre>
-  </>
+  const { profile } = useSelector(selectUserSlice)
+
+  return (
+    <>
+      <pre>{JSON.stringify(profile, null, 2)}</pre>
+    </>
+  )
 }

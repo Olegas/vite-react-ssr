@@ -1,30 +1,21 @@
 import './App.css'
-import { Route, Routes } from 'react-router-dom'
-import { Login } from './pages/Login'
+import { Route, Switch } from 'react-router-dom'
+import { MainPage } from './pages/MainPage'
 import { Me } from './pages/Me'
-import { WithAuthProtection } from './components/WithAuthProtection'
-import { useDispatch, useSelector } from 'react-redux'
-import { useEffect } from 'react'
-import { loadMe, selectIsAuthCompleted } from './store'
+import { Login } from './pages/Login'
 
-function App() {
-  const dispatch = useDispatch()
-  const isAuthCompleted = useSelector(selectIsAuthCompleted)
-
-  useEffect(() => {
-    if (!isAuthCompleted) {
-      dispatch(loadMe());
-    }
-  }, [isAuthCompleted])
-
-  return <Routes>
-    <Route path="/login" element={<Login />}/>
-    <Route path="/me" element={
-      <WithAuthProtection>
+export default function App() {
+  return (
+    <Switch>
+      <Route path="/login" exact>
+        <Login />
+      </Route>
+      <Route path="/me" exact>
         <Me />
-      </WithAuthProtection>
-    }/>
-  </Routes>
+      </Route>
+      <Route path="/">
+        <MainPage />
+      </Route>
+    </Switch>
+  )
 }
-
-export default App
